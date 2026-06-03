@@ -1,4 +1,4 @@
-```markdown
+
 <div align="center">
 
 # 🛡️ DevSecOps Deployment Gatekeeper
@@ -945,4 +945,4 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 [⬆ Back to Top](#-devsecops-deployment-gatekeeper)
 
 </div>
-```
+
