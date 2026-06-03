@@ -1,0 +1,79 @@
+# Example GitHub Action workflow for integrating with DevSecOps Deployment Gatekeeper
+name: Security Gate Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+jobs:
+  security-gate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run security gate check
+      run: |
+        python -m devops_deployment_security_gate run \
+          --pr-number ${{ github.event.pull_request.number }} \
+          --repository ${{ github.repository }} \
+          --branch ${{ github.head_ref }}
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONARQUBE_URL: ${{ secrets.SONARQUBE_URL }}
+        SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+    
+    - name: Set PR status to success
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.repos.createCommitStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sha: context.payload.pull_request.head.sha,
+            state: "success",
+            target_url: "https://github.com/${{ github.repository }}",
+            description: "Security gate passed - No critical vulnerabilities found",
+            context: "Security Gate"
+          })
+    
+    - name: Set PR status to failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.repos.createCommitStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sha: context.payload.pull_request.head.sha,
+            state: "failure",
+            target_url: "https://github.com/${{ github.repository }}",
+            description: "Security gate failed - Critical vulnerabilities detected",
+            context: "Security Gate"
+          })
+    
+    - name: Comment on PR if failed
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '❌ **Security Gate Failed**\n\nCritical vulnerabilities were detected in this pull request. Please address these issues before merging.\n\nFor more details, check the workflow logs.'
+          })

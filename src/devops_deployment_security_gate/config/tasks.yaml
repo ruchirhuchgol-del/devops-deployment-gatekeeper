@@ -1,0 +1,56 @@
+extract_pr_security_context:
+  description: 'Extract and validate metadata from GitHub pull request #{pr_number}
+    in {repository}. This is a manual trigger workflow - the inputs ({pr_number},
+    {repository}, {branch_name}) are provided when the automation is triggered by
+    a PR event. Parse and structure the PR information including branch name validation,
+    commit SHA, and file change analysis required for SonarQube security scanning.'
+  expected_output: 'Structured PR metadata report containing: validated PR number
+    {pr_number}, confirmed repository {repository}, verified branch name {branch_name},
+    commit SHA, list of changed file paths, PR author details, and confirmation that
+    all required data for security scanning is available and accurate.'
+  agent: pr_metadata_extraction_specialist
+execute_sonarqube_security_scan:
+  description: 'Execute comprehensive SonarQube security analysis on branch {branch_name}
+    for project {project_key}. Connect to SonarQube server at {sonarqube_url}, trigger
+    static code analysis scan, poll for completion (maximum 5 minutes), and retrieve
+    detailed vulnerability report. Focus on identifying critical security issues:
+    SQL injection, XSS, insecure deserialization, authentication bypass, and OWASP
+    Top 10 vulnerabilities.'
+  expected_output: 'Complete SonarQube security scan report in JSON format containing:
+    total_issues count, critical_count (most important), major_count, security_hotspots,
+    scan_status, and detailed issue_details array with vulnerability descriptions,
+    affected file paths, line numbers, security rule types, and remediation guidance
+    for all critical findings.'
+  agent: sonarqube_security_scanner
+  context:
+  - extract_pr_security_context
+apply_security_gate_decision:
+  description: 'Analyze the SonarQube security scan results and apply deployment security
+    policy for {repository} PR #{pr_number}. CRITICAL RULE: If critical_count > 0
+    from scan results, immediately BLOCK deployment. If critical_count = 0, APPROVE
+    deployment. Generate detailed security assessment with clear BLOCKED or APPROVED
+    status, security justification, and specific remediation steps for any critical
+    vulnerabilities found.'
+  expected_output: Security gate decision report with clear deployment status (BLOCKED
+    or APPROVED), detailed justification based on critical vulnerability count, comprehensive
+    security risk assessment, list of critical issues requiring immediate attention
+    (if any), estimated remediation effort, and actionable next steps for the development
+    team.
+  agent: security_policy_decision_engine
+  context:
+  - execute_sonarqube_security_scan
+deliver_security_alert_notifications:
+  description: 'Send immediate security alert notifications to Slack channel {slack_channel}
+    based on the security gate decision for {repository} PR #{pr_number}. If deployment
+    is BLOCKED, send urgent alert with critical vulnerability details, affected files,
+    and remediation guidance. If APPROVED, send confirmation message. Include SonarQube
+    report links and clear action items. Ensure notifications are delivered within
+    30 seconds for rapid incident response.'
+  expected_output: Delivery confirmation report showing successful Slack notification
+    to {slack_channel}, exact message content sent (blocked alert or approval confirmation),
+    delivery timestamp, channel member count notified, and verification that security
+    team has been properly alerted about the deployment decision and any critical
+    security issues.
+  agent: security_alert_notification_manager
+  context:
+  - apply_security_gate_decision

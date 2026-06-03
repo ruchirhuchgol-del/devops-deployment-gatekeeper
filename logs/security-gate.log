@@ -1,0 +1,7 @@
+2025-10-06 11:43:13,889 - root - INFO - test_logging - main - Root logger test message
+2025-10-06 11:43:13,889 - devops_deployment_security_gate - DEBUG - test_logging - main - App debug message
+2025-10-06 11:43:13,889 - devops_deployment_security_gate - INFO - test_logging - main - App info message
+2025-10-06 11:43:13,889 - devops_deployment_security_gate - WARNING - test_logging - main - App warning message
+2025-10-06 11:43:13,889 - devops_deployment_security_gate - ERROR - test_logging - main - App error message
+2025-10-06 11:43:13,889 - devops_deployment_security_gate.core - INFO - test_logging - main - Core module info message
+2025-10-06 11:43:13,889 - devops_deployment_security_gate.core - DEBUG - test_logging - main - Core module debug message

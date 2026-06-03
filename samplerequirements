@@ -1,0 +1,29 @@
+Agents Created:
+GitHub PR Security Monitor - Extracts PR metadata and coordinates workflow
+SonarQube Security Scanner - Executes security analysis with custom SonarQube tool
+Deployment Security Controller - Enforces zero-critical-vulnerability policy
+Security Alert Notification Manager - Sends structured Slack notifications
+Workflow Tasks:
+Monitor GitHub PR Events - Extract PR #{pr_number} metadata from {repository}
+Execute SonarQube Security Scan - Scan {branch_name} for {project_key}
+Enforce Deployment Security Policy - Apply security gate (block if critical > 0)
+Send Security Alert Notifications - Alert {slack_channel} with results
+Custom SonarQube Tool Created:
+✅ Complete API integration for security scanning
+✅ Vulnerability parsing and classification
+✅ Critical issue detection and reporting
+✅ Polling mechanism for scan completion
+
+Required Setup:
+Before running the automation, you'll need to:
+
+Set Environment Variable: SONARQUBE_AUTH_TKN (SonarQube Bearer token)
+Connect GitHub Integration (for PR monitoring and status updates)
+Connect Slack Integration (for security notifications)
+Configure GithubSearchTool embeddings (in CrewAI Studio)
+Input Variables:
+{repository} - Target GitHub repository
+{pr_number} - Pull request number to scan
+{branch_name} - Branch name from PR
+{project_key} - SonarQube project identifier
+{slack_channel} - Notification channel (e.g., #devops-security)
